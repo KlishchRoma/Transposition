@@ -6,14 +6,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.latvia.exception.OutOfRangeOctaveException;
 
-public class NoteTransposer {
+public abstract class NoteTransposer {
   Logger logger = Logger.getLogger(getClass().getName());
 
   private final ObjectMapper objectMapper;
 
-  public NoteTransposer(ObjectMapper objectMapper) {
+  NoteTransposer(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
   }
+
+  protected abstract void validate(int octave, int noteNumber);
 
   public ArrayNode transposeMusic(RequestReader.TranspositionRequest request) {
     ArrayNode transposedMusic = objectMapper.createArrayNode();
@@ -30,10 +32,7 @@ public class NoteTransposer {
         noteNumber -= 12;
         octave++;
       }
-      if (octave < -3 || octave > 5) {
-        logger.log(Level.INFO, "Octave number must be between -3 and 5");
-        throw new OutOfRangeOctaveException("Out of range {}", octave);
-      }
+      validate(octave, noteNumber);
       transposedMusic.add(objectMapper.createArrayNode().add(octave).add(noteNumber));
     }
     return transposedMusic;
